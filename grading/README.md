@@ -1,6 +1,6 @@
-# Calucation grades from scores in multiple choise exams
+# Calculating grades from scores of multiple choise exams
 
-The script `grading.R` provides function the genrate a grading schema and caluates grades from scores. For example, the method used by Risbo for a questionnaire with 40 question and 4 choises.
+The script `grading.R` provides functions to generate a grading schemata and to caluate grades from scores. For example, the method used by Risbo for a questionnaire with 40 question and 4 choises.
 
 ```R
 source("grading.R")
@@ -19,3 +19,7 @@ schema <- grading_schema(n_questions=40,
 scores = c(23, 26, 27, 28, 17, 34, 40, 32, 11)
 grades(scores, schema)
 ```
+
+---
+
+(c) O. Lindemann, MIT licence
