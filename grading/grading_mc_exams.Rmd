@@ -1,5 +1,5 @@
 ---
-title: "Grading Multiple Choice exams at the DPECS"
+title: "Grading Multiple Choice Exams at the DPECS"
 author: Test Committee, Oliver Lindemann
 output:
   pdf_document: default
