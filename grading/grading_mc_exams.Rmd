@@ -92,11 +92,11 @@ plot_grades <- function(s) {
 ```
 
 
-Risbo and Remindo use different methods to calculate a grade from a score (i.e., number correct answers) in a multiple choice exam. 
+Risbo and Remindo use different methods to calculate a grade from a score (i.e., number of correct answers) in a multiple choice exam. 
 
 ## Risbo's method
 
-Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will to be rounded up. 
+Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will be rounded up. 
 
 For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ is:
 
