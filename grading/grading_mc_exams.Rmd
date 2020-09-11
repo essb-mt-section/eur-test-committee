@@ -1,6 +1,6 @@
 ---
 title: "Grading Multiple Choice exams at the DPECS"
-author: Oliver Lindemann
+author: Test Committee, Oliver Lindemann
 output:
   pdf_document: default
   html_document:
@@ -35,14 +35,14 @@ print_table <- function(n_questions, schemata) {
     scores = x:(x+19)
     scores[scores>n_questions] = NA
     df[1:20, paste0("score.", c)] = scores
-    df[1:20, paste0("risbo.", c)] = grades(scores, schemata$risbo)
-    df[1:20, paste0("remindo.", c)] = grades(scores, schemata$remindo)
+    df[1:20, paste0("risbo.", c)] = grades(scores, schemata$risbo, rounding_digits = 1)
+    df[1:20, paste0("remindo.", c)] = grades(scores, schemata$remindo, rounding_digits = 1)
     x = x + 20
     c = c + 1
     align = paste0(align, "rll")
     if (x>n_questions) break
   }
-  knitr::kable(df,  align=align)
+  knitr::kable(df,  align=align, caption="Grading table")
 }
 
 
@@ -91,32 +91,38 @@ plot_grades <- function(s) {
 }
 ```
 
-# Method
+
+Risbo and Remindo use different methods to calculate a grade from a score (i.e., number correct answers) in a multiple choice exam. 
 
 ## Risbo's method
 
-Grades are calculated from score using a single linear interpolation between the point of the passing grade, $P_1$, and the highest possible grade, $P_2$. The smallest score of passing the exam has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. The calculated passing score will to be rounded up. 
+Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will to be rounded up. 
 
-For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is set to $c_g=40/4=10$. With a passing criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ is:
+For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ is:
 
 $$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5 \rightarrow 27$$ 
 
-Thus, if the highest possible grade is $g_{h}=10$, the interpolation used the following points: $$P_1 = (s_p, g_p)=(27,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
+Thus, if the highest possible grade is $g_{h}=10$, the interpolation uses the following two points: $$P_1 = (s_p, g_p)=(27,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
 
 
 ## Remindo's method
 
-Remindo's method\footnote{Please note that I have only access to the grades of a few Remindo exams and I don't know whether that applies to all Remindo exams.} is somewhat different from the method used by Risbo: 
+Remindo's method\footnote{Please note that I have only access to the grades of few Remindo exams and I don't know whether this applies to all Remindo exams.} is somewhat different from the method used by Risbo: 
 
-1. If answering options of the some questions will excluded after the exam, the guessing correction will be adapted accordingly.
+1. If answer options of the some questions will be excluded after the exam, the guessing correction will be adapted accordingly.
 2. The calculated passing score will not be rounded up. With the example above, the interpolation uses the point $P_1 =(26.5,5.5)$.
-3. The method uses a bi-linear interpolation. That is, one interpolation for all score between the pass-fail criteria  (see above) and separate linear interpolation for the scores between the guessing rate and the pass-fail criteria. This method ensures if students that have one question more correct than the guessing rate receive grade higher than 1.
+3. The method uses a bi-linear interpolation. That is, one interpolation for all score between the pass-fail criterion (see above) and separate linear interpolation for the scores between the guessing rate and the pass-fail criteria. 
 
+## Summary
 
-Find below the grading procesure of multiple choise exam often used at the DEPCS. An implementation of the grading in `R` to calculate the grades of any exam can be found [here](http://)
+Remindo grades are slightly higher for all grades below the pass-fail criterion (due to 3.) and the grades above and close to 5.5 (due to 2.). The bilinear interpolation ensures that if students have one question more correct than the guessing rate, they receive grade higher than 1. This is not the case in Risbo's methods of grading (see tables below).
+
+An implementation of the grading in `R` to calculate the grades for any exam can be found online \url{https://github.com/lindemann09/eur_test_committee/tree/master/grading} 
+
+Find below the grading procedure of multiple choise exam often used at the DEPCS.
+
 \newpage
 
-# Grading tables
 ```{r, echo=FALSE}
 n_choices = 4
 n_questions = 40

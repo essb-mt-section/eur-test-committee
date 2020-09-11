@@ -15,7 +15,7 @@ print(read_exam_info("RISBO_RESULTS.ZIP"))
 # individual answers for own statistics and calulations
 answer <- read_individual_answers("RISBO_RESULTS.ZIP")
 
-# grades and item statistics
+# risbo grades and item statistics
 statistics <- read_mc_exam_statistics("RISBO_RESULTS.ZIP")
 
 ```
@@ -29,7 +29,8 @@ statistics <- read_mc_exam_statistics("RISBO_RESULTS.ZIP")
 ```python
 # python code
 from remindo_results import RemindoResults
-rr = RemindoResults("remindo_result_exam.json", n_questions=41, ignored_questions=[0])
+rr = RemindoResults("remindo_result_exam.json", 
+                    n_questions=41, ignored_questions=[0])
 rr.save_csv_files()
 ````
 
