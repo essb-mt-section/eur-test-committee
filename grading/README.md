@@ -1,4 +1,7 @@
-# Calculating grades from scores of multiple choise exams
+## Calculating grades from scores of multiple choise exams
+
+For the **description of the grading procedures** and example **grading tables** see `grading_mc_exam.pdf` (produced by `grading_mc_exam.Rmd`).
+
 
 The script `grading.R` provides functions to generate a grading schemata and to caluate grades from scores. For example, the method used by Risbo for a exam with 40 question and 4 choises.
 
@@ -23,6 +26,8 @@ grades(scores, schema)
 grading_table(schema)
 
 ```
+
+
 
 ---
 
