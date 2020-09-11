@@ -12,17 +12,17 @@ source("grading_schema.R")
 library(ggplot2)
 library(knitr)
 
-knitr::opts_chunk$set(fig.width=8, fig.height=3) 
+knitr::opts_chunk$set(fig.width=8, fig.height=3)
 
 schemata <- function(n_questions, n_choices) {
-  risbo = grading_schema(n_questions = n_questions, 
-                   guessing_score = n_questions/n_choices, 
+  risbo = grading_schema(n_questions = n_questions,
+                   guessing_score = n_questions/n_choices,
                    rounding_up_passing_score = TRUE)
-  remindo = grading_schema(n_questions = n_questions, 
-                   guessing_score = n_questions/n_choices, 
+  remindo = grading_schema(n_questions = n_questions,
+                   guessing_score = n_questions/n_choices,
                    rounding_up_passing_score = FALSE,
-                   bilinear_interpolation = TRUE)    
-  
+                   bilinear_interpolation = TRUE)
+
   return(list(risbo=risbo, remindo=remindo))
 }
 
@@ -48,7 +48,7 @@ print_table <- function(n_questions, schemata) {
 
 risbo_formular <- function(s) {
   rtn = "Risbo's method: $$grade = \\begin{cases}"
-  rtn = paste0(rtn, round(s$risbo$interp_pass$const, 3), "+", round(s$risbo$interp_pass$b, 3), 
+  rtn = paste0(rtn, round(s$risbo$interp_pass$const, 3), "+", round(s$risbo$interp_pass$b, 3),
                "\\cdot score & \\text{if } score > ", round(s$risbo$lowest_grade_breakpoint),
                "\\\\")
   rtn = paste0(rtn, s$risbo$lowest_grade, " & \\text{if } score \\leq",
@@ -84,7 +84,7 @@ plot_grades <- function(s) {
     geom_point(data = points_b, aes(x,y,colour=type), size=3, alpha = 0.75) +
     geom_hline(yintercept = s$remindo$passing_grade, colour = "#999999") +
     scale_color_manual(values=c("#9999CC", "#CC6666")) +
-    labs(color="Legend text") +
+    labs(color="Method") +
     scale_y_continuous(name="Grade", breaks=s$risbo$lowest_grade:s$risbo$highest_grade) +
     xlab('Test Score') +
     theme_bw()
@@ -92,32 +92,32 @@ plot_grades <- function(s) {
 ```
 
 
-Risbo and Remindo use different methods to calculate a grade from a score (i.e., number of correct answers) in a multiple choice exam. 
+Risbo and Remindo use different methods to calculate a grade from a score (i.e., number of correct answers) in a multiple choice exam.
 
 ## Risbo's method
 
-Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will be rounded up. 
+Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will be rounded up.
 
 For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ is:
 
-$$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5 \rightarrow 27$$ 
+$$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5 \rightarrow 27$$
 
 Thus, if the highest possible grade is $g_{h}=10$, the interpolation uses the following two points: $$P_1 = (s_p, g_p)=(27,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
 
 
 ## Remindo's method
 
-Remindo's method\footnote{Please note that I have only access to the grades of few Remindo exams and I don't know whether this applies to all Remindo exams.} is somewhat different from the method used by Risbo: 
+Remindo's method\footnote{Please note that I have only access to the grades of few Remindo exams and I don't know whether this applies to all Remindo exams.} is somewhat different from the method used by Risbo:
 
 1. If answer options of the some questions will be excluded after the exam, the guessing correction will be adapted accordingly.
 2. The calculated passing score will not be rounded up. With the example above, the interpolation uses the point $P_1 =(26.5,5.5)$.
-3. The method uses a bi-linear interpolation. That is, one interpolation for all score between the pass-fail criterion (see above) and separate linear interpolation for the scores between the guessing rate and the pass-fail criteria. 
+3. The method uses a bi-linear interpolation. That is, one interpolation for all scores above the pass-fail criterion (see above) and a separate linear interpolation for the scores between the guessing rate and the pass-fail criterion. 
 
 ## Summary
 
 Remindo grades are slightly higher for all grades below the pass-fail criterion (due to 3.) and the grades above and close to 5.5 (due to 2.). The bilinear interpolation ensures that if students have one question more correct than the guessing rate, they receive grade higher than 1. This is not the case in Risbo's methods of grading (see tables below).
 
-An implementation of the grading in `R` to calculate the grades for any exam can be found online \url{https://github.com/lindemann09/eur_test_committee/tree/master/grading} 
+An implementation of the grading in `R` to calculate the grades for any exam can be found online \url{https://github.com/lindemann09/eur_test_committee/tree/master/grading}
 
 Find below the grading procedure of multiple choise exam often used at the DEPCS.
 
@@ -212,5 +212,3 @@ s = schemata(n_questions, n_choices)
 plot_grades(s)
 print_table(n_questions, schema = s)
 ```
-
-
