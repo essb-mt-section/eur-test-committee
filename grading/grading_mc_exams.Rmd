@@ -7,6 +7,8 @@ output:
     df_print: paged
 ---
 
+<!-- Version 2 -->
+
 ```{r, echo=FALSE}
 source("grading_schema.R")
 library(ggplot2)
