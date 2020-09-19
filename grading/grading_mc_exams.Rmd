@@ -20,12 +20,12 @@ schemata <- function(n_questions, n_choices) {
   risbo = grading_schema(n_questions = n_questions,
                    guessing_score = n_questions/n_choices,
                    rounding_up_passing_score = TRUE)
-  remindo = grading_schema(n_questions = n_questions,
+  dpecs = grading_schema(n_questions = n_questions,
                    guessing_score = n_questions/n_choices,
                    rounding_up_passing_score = FALSE,
-                   bilinear_interpolation = TRUE)
+                   bilinear_interpolation = FALSE)
 
-  return(list(risbo=risbo, remindo=remindo))
+  return(list(risbo=risbo, dpecs=dpecs))
 }
 
 print_table <- function(n_questions, schemata) {
@@ -36,9 +36,9 @@ print_table <- function(n_questions, schemata) {
   while(TRUE) {
     scores = x:(x+19)
     scores[scores>n_questions] = NA
-    df[1:20, paste0("score.", c)] = scores
-    df[1:20, paste0("risbo.", c)] = grades(scores, schemata$risbo, rounding_digits = 1)
-    df[1:20, paste0("remindo.", c)] = grades(scores, schemata$remindo, rounding_digits = 1)
+    df[1:20, paste0("Score", c)] = scores
+    df[1:20, paste0("DPECS", c)] = grades(scores, schemata$dpecs, rounding_digits = 1)
+    df[1:20, paste0("Risbo", c)] = grades(scores, schemata$risbo, rounding_digits = 1)
     x = x + 20
     c = c + 1
     align = paste0(align, "rll")
@@ -48,44 +48,43 @@ print_table <- function(n_questions, schemata) {
 }
 
 
+dpecs_formular <- function(s) {
+  rtn = "DPECS: $$grade = \\begin{cases}"
+  rtn = paste0(rtn, round(s$dpecs$interp_pass$const, 3), "+", round(s$dpecs$interp_pass$b, 3),
+               "\\cdot score & \\text{if } score > ", round(s$dpecs$lowest_grade_breakpoint,2),
+               "\\\\")
+  rtn = paste0(rtn, s$dpecs$lowest_grade, " & \\text{if } score \\leq",
+               round(s$dpecs$lowest_grade_breakpoint,2))
+  return(paste0(rtn," \\end{cases}$$"))
+}
+
+
 risbo_formular <- function(s) {
-  rtn = "Risbo's method: $$grade = \\begin{cases}"
+  rtn = "Risbo: $$grade = \\begin{cases}"
   rtn = paste0(rtn, round(s$risbo$interp_pass$const, 3), "+", round(s$risbo$interp_pass$b, 3),
-               "\\cdot score & \\text{if } score > ", round(s$risbo$lowest_grade_breakpoint),
+               "\\cdot score & \\text{if } score > ", round(s$risbo$lowest_grade_breakpoint,2),
                "\\\\")
   rtn = paste0(rtn, s$risbo$lowest_grade, " & \\text{if } score \\leq",
                round(s$risbo$lowest_grade_breakpoint,2))
   return(paste0(rtn," \\end{cases}$$"))
 }
 
-remindo_formular <- function(s) {
-  rtn = "Remindo's method: $$grade = \\begin{cases}"
-  rtn = paste0(rtn, round(s$remindo$interp_pass$const, 3), "+", round(s$remindo$interp_pass$b, 3),
-               "\\cdot score & \\text{if } score \\geq ", round(s$remindo$passing_score, 2), "\\\\")
-  rtn = paste0(rtn, round(s$remindo$interp_fail$const, 3), "+", round(s$remindo$interp_fail$b, 3),
-               "\\cdot score & \\text{if }", round(s$remindo$lowest_grade_breakpoint, 2),
-               " < score < ", round(s$remindo$passing_score, 2), "\\\\")
-  rtn = paste0(rtn, s$remindo$lowest_grade, " & \\text{if } score \\leq ",
-               round(s$remindo$lowest_grade_breakpoint, 2))
-  return(paste0(rtn," \\end{cases}$$"))
-}
 
 plot_grades <- function(s) {
   points_a = data.frame(x=c(s$risbo$passing_score, s$risbo$n_questions),
                   y=c(s$risbo$passing_grade, s$risbo$highest_grade),
                   type="Risbo")
-  points_b = data.frame(x=c(s$remindo$guessing_score, s$remindo$passing_score, s$risbo$n_questions),
-                  y=c(s$remindo$lowest_grade, s$risbo$passing_grade, s$risbo$highest_grade),
-                  type="Remindo")
+  points_b = data.frame(x=c(s$dpecs$passing_score, s$dpecs$n_questions),
+                  y=c(s$dpecs$passing_grade, s$dpecs$highest_grade),
+                  type="DPECS")
   ggplot() +
     #risbo
     geom_line(data=grading_table(s$risbo), aes(x=score, y=grade, colour="Risbo")) +
     geom_point(data = points_a, aes(x,y,colour=type), size=3, alpha = 0.75) +
-    #remindo
-    geom_line(data=grading_table(s$remindo), aes(x=score, y=grade, colour="Remindo")) +
+    geom_line(data=grading_table(s$dpecs), aes(x=score, y=grade, colour="DPECS")) +
     geom_point(data = points_b, aes(x,y,colour=type), size=3, alpha = 0.75) +
-    geom_hline(yintercept = s$remindo$passing_grade, colour = "#999999") +
-    scale_color_manual(values=c("#9999CC", "#CC6666")) +
+    geom_hline(yintercept = s$risbo$passing_grade, colour = "#999999") +
+    scale_color_manual(values=c("#CC6666", "#9999CC" )) +
     labs(color="Method") +
     scale_y_continuous(name="Grade", breaks=s$risbo$lowest_grade:s$risbo$highest_grade) +
     xlab('Test Score') +
@@ -94,34 +93,22 @@ plot_grades <- function(s) {
 ```
 
 
-Risbo and Remindo use different methods to calculate a grade from a score (i.e., number of correct answers) in a multiple choice exam.
+## Grading procedure
 
-## Risbo's method
-
-Risbo uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. Importantly, the calculated passing score will be rounded up.
-
-For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ is:
-
-$$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5 \rightarrow 27$$
-
-Thus, if the highest possible grade is $g_{h}=10$, the interpolation uses the following two points: $$P_1 = (s_p, g_p)=(27,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
+To calculate the grades from the scores of a multiple choices test, the DPECS uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. 
 
 
-## Remindo's method
+For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ ("exact caesura") is :
 
-Remindo's method\footnote{Please note that I have only access to the grades of few Remindo exams and I don't know whether this applies to all Remindo exams.} is somewhat different from the method used by Risbo:
+$$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5$$
 
-1. If answer options of the some questions will be excluded after the exam, the guessing correction will be adapted accordingly.
-2. The calculated passing score will not be rounded up. With the example above, the interpolation uses the point $P_1 =(26.5,5.5)$.
-3. The method uses a bi-linear interpolation. That is, one interpolation for all scores above the pass-fail criterion (see above) and a separate linear interpolation for the scores between the guessing rate and the pass-fail criterion. 
+Thus, if the highest possible grade is $g_{h}=10$, the interpolation uses the following two points: $$P_1 = (s_p, g_p)=(26.5,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
 
-## Summary
+## Risbo's grading procedure  
 
-Remindo grades are slightly higher for all grades below the pass-fail criterion (due to 3.) and the grades above and close to 5.5 (due to 2.). The bilinear interpolation ensures that if students have one question more correct than the guessing rate, they receive grade higher than 1. This is not the case in Risbo's methods of grading (see tables below).
+In contrast to the grading procedure described above, the Risbo used in the previous years not an exact caesura and rounded the passing score $s_p$ that corresponds to the passing grade $g_{p}=5.5$ up. That is, $s_p = 26.5\rightarrow  27$. This results in slightly lower grades for scores near to the pass/fail criterion. 
 
-An implementation of the grading in `R` to calculate the grades for any exam can be found online \url{https://github.com/lindemann09/eur_test_committee/tree/master/grading}
-
-Find below the grading procedure of multiple choise exam often used at the DEPCS.
+Find below the grading procedure of multiple choice exam often used at the DPECS.
 
 \newpage
 
@@ -131,8 +118,8 @@ n_questions = 40
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
@@ -145,8 +132,8 @@ n_questions = 50
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
@@ -161,8 +148,8 @@ n_questions = 50
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
@@ -175,8 +162,8 @@ n_questions = 60
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
@@ -192,8 +179,8 @@ n_questions = 80
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
@@ -208,8 +195,8 @@ n_questions = 90
 s = schemata(n_questions, n_choices)
 ```
 ## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
 `r risbo_formular(s)`
-`r remindo_formular(s)`
 ```{r, echo=FALSE}
 plot_grades(s)
 print_table(n_questions, schema = s)
