@@ -1,5 +1,5 @@
 # (c) O. Lindemann, MIT licence
-# version 0.2
+# version 0.2.1
 
 #' Generate regression function to convert multiple choice scores to grades
 #'
@@ -12,9 +12,10 @@
 #' @param passing_score_percentage percentage of correct answers that is
 #'                       corresponding to the passing grade (default: 55)
 #' @param bilinear_interpolation   bilinear interpolation, that is, separate
-#'                      interpolations for pass and failed scores  (default: FALSE)
+#'                      interpolations for pass and failed scores (default: FALSE)
 #' @param rounding_up_passing_score if TRUE, calculated passing scores will
-#'                                  be rounded up (default: TRUE)
+#'                                  be rounded up, if FALSE an exact caesura will
+#'                                  be used (default: TRUE)
 #'
 #' @return grading schema object that can be used to calculate the grades with
 #'         the `grades` function. 
