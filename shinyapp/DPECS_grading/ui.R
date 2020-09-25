@@ -1,7 +1,7 @@
 library(shiny)
 
 shinyUI(fluidPage(
-  titlePanel("Grading MC Exam at the DPECS"),
+  titlePanel("Grading MC Exams at the DPECS"),
   
   sidebarLayout(
     
@@ -19,11 +19,11 @@ shinyUI(fluidPage(
     ),
     
     mainPanel(
-      
+      uiOutput("titel"), 
       tabsetPanel(type = "tabs",
                   tabPanel("Table", tableOutput("view")),
-                  tabPanel("Graph", plotOutput("graph")),
-                  tabPanel("Formular", uiOutput("formula"))
+                  tabPanel("Graph/Formular", uiOutput("formula"), plotOutput("graph")),
+                  tabPanel("Explanation",uiOutput("explanation"))
       )
     )
   )

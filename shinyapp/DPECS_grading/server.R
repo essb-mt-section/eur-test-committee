@@ -49,7 +49,27 @@ plot_grades <- function(schema) {
         theme_bw()
 }
 
-
+explanation_html <- function(nq, nc) {
+    # nq: n questions, nc: numbre choices
+    g = round(nq/nc, 2)
+    sp = round(.55 * (nq- g) + g, 2)
+    rtn = paste0("<p>",
+                 "To calculate the grades from the scores of a multiple choices test, the ",
+                 "DPECS uses a single linear interpolation between the point of the pass-fail criterion, ",
+                 "\\(P_1\\), and the highest possible grade, \\(P_2\\). The smallest passing score has to fulfil the ",
+                 "criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction.",
+                 "</p>") 
+    
+    rtn = paste0(rtn, "<p>",
+                 "If we have n=",nq, " questions with ",nc," choices, the guessing correction is: $$c_g=", nq, "/", nc, "=", g, "$$ ",
+                 "With a knowledge criterion \\(k_p=.55\\) and a passing grade \\(g_{p}=5.5\\), the passing score \\(s_p\\) is :",
+                 "$$s_p = k_p ( n - c_g) + c_g = .55\\, (",nq, "-", g, ")+",g,"= ",sp,"$$",
+                 "Thus, if the highest possible grade is \\(g_{h}=10\\), the interpolation uses the following two points: ",
+                 "$$P_1 = (s_p, g_p)=(", sp, ",5.5)$$ $$P_2 =(n, g_h)=(",nq, ",10) $$",
+                 "</p>") 
+    
+    return(rtn)
+}
 
 # Define server logic to summarize and view selected dataset ----
 shinyServer(function(input, output) {
@@ -73,4 +93,14 @@ shinyServer(function(input, output) {
         withMathJax(HTML(paste("<p>", grading_formular(schema()), "</p>")))
     })
     
+    output$explanation <- renderUI({
+        withMathJax(HTML(explanation_html(input$n_quest, as.numeric(input$n_choices))))
+    })
+    
+    output$titel <- renderUI({
+        rtn <- paste0("<H4>Grading procedure for ", input$n_quest, 
+                      " questions with ",input$n_choices," choices</H4>")
+        HTML(rtn)
+    })
+
 })
