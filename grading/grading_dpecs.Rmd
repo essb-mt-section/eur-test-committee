@@ -1,0 +1,176 @@
+---
+title: "Grading Multiple Choice Exams at the DPECS"
+author: Test Committee
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+<!-- Version 2 -->
+
+```{r, echo=FALSE}
+source("grading_schema.R")
+library(ggplot2)
+library(knitr)
+
+knitr::opts_chunk$set(fig.width=8, fig.height=3)
+
+schemata <- function(n_questions, n_choices) {
+  risbo = grading_schema(n_questions = n_questions,
+                   guessing_score = n_questions/n_choices,
+                   rounding_up_passing_score = TRUE)
+  dpecs = grading_schema(n_questions = n_questions,
+                   guessing_score = n_questions/n_choices,
+                   rounding_up_passing_score = FALSE,
+                   bilinear_interpolation = FALSE)
+
+  return(list(risbo=risbo, dpecs=dpecs))
+}
+
+print_table <- function(n_questions, schemata) {
+  df = data.frame()
+  x = 1
+  c = 1
+  align=""
+  while(TRUE) {
+    scores = x:(x+19)
+    scores[scores>n_questions] = NA
+    df[1:20, paste0("Score", c)] = scores
+    df[1:20, paste0("Grade", c)] = grades(scores, schemata$dpecs, rounding_digits = 1)
+    x = x + 20
+    c = c + 1
+    align = paste0(align, "rll")
+    if (x>n_questions) break
+  }
+  knitr::kable(df,  align=align, caption="Grading table")
+}
+
+
+dpecs_formular <- function(s) {
+  rtn = "Formular: $$grade = \\begin{cases}"
+  rtn = paste0(rtn, round(s$dpecs$interp_pass$const, 3), "+", round(s$dpecs$interp_pass$b, 3),
+               "\\cdot score & \\text{if } score > ", round(s$dpecs$lowest_grade_breakpoint,2),
+               "\\\\")
+  rtn = paste0(rtn, s$dpecs$lowest_grade, " & \\text{if } score \\leq",
+               round(s$dpecs$lowest_grade_breakpoint,2))
+  return(paste0(rtn," \\end{cases}$$"))
+}
+
+
+plot_grades <- function(s) {
+  points = data.frame(x=c(s$dpecs$passing_score, s$dpecs$n_questions),
+                  y=c(s$dpecs$passing_grade, s$dpecs$highest_grade))
+  ggplot() +
+    #risbo
+    geom_line(data=grading_table(s$dpecs), aes(x=score, y=grade)) +
+    geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
+    geom_hline(yintercept = s$dpecs$passing_grade, colour = "#999999") +
+    #scale_color_manual(values=c("#CC6666", "#9999CC" )) +
+    #labs(color="Method") +
+    scale_y_continuous(name="Grade", breaks=s$risbo$lowest_grade:s$risbo$highest_grade) +
+    xlab('Test Score') +
+    theme_bw()
+}
+```
+
+
+## Grading procedure
+
+To calculate the grades from the scores of a multiple choices test, the DPECS uses a single linear interpolation between the point of the pass-fail criterion, $P_1$, and the highest possible grade, $P_2$. The smallest passing score has to fulfil the criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction. 
+
+
+For example, if we have $n=$ **40 questions with 4 choices**, the guessing correction is $c_g=40/4=10$. With a knowledge criterion $k_p=.55$ and a passing grade $g_{p}=5.5$, the passing score $s_p$ ("exact caesura") is :
+
+$$s_p = k_p ( n - c_g) + c_g = .55\, (40 -10) + 10 = 26.5$$
+
+Thus, if the highest possible grade is $g_{h}=10$, the interpolation uses the following two points: $$P_1 = (s_p, g_p)=(26.5,5.5)$$ $$P_2 =(n, g_h)=(40,10) $$
+
+
+Find below the grading procedure of multiple choice exam often used at the DPECS.
+
+\newpage
+
+```{r, echo=FALSE}
+n_choices = 4
+n_questions = 40
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
+
+\newpage
+```{r, echo=FALSE}
+n_choices = 3
+n_questions = 50
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
+
+
+
+\newpage
+```{r, echo=FALSE}
+n_choices = 4
+n_questions = 50
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
+
+\newpage
+```{r, echo=FALSE}
+n_choices = 3
+n_questions = 60
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
+
+
+
+
+\newpage
+```{r, echo=FALSE}
+n_choices = 2
+n_questions = 80
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
+
+
+
+\newpage
+```{r, echo=FALSE}
+n_choices = 2
+n_questions = 90
+s = schemata(n_questions, n_choices)
+```
+## MC exam with `r n_questions` questions and `r n_choices` choices
+`r dpecs_formular(s)`
+```{r, echo=FALSE}
+plot_grades(s)
+print_table(n_questions, schema = s)
+```
