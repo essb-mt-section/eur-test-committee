@@ -46,7 +46,8 @@ plot_grades <- function(schema) {
         geom_hline(yintercept = schema$passing_grade, colour = "#999999") +
         scale_y_continuous(name="Grade", breaks=schema$lowest_grade:schema$highest_grade) +
         xlab('Test Score') +
-        theme_bw()
+        theme_bw() +
+        theme(text = element_text(size = 20))
 }
 
 explanation_html <- function(nq, nc) {
