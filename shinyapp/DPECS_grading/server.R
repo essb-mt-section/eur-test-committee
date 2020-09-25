@@ -97,10 +97,11 @@ shinyServer(function(input, output) {
         withMathJax(HTML(explanation_html(input$n_quest, as.numeric(input$n_choices))))
     })
     
-    output$titel <- renderUI({
+    output$subtitle <- renderUI({
         rtn <- paste0("<H4>Grading procedure for ", input$n_quest, 
                       " questions with ",input$n_choices," choices</H4>")
         HTML(rtn)
     })
 
+    
 })

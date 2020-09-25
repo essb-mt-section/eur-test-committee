@@ -1,10 +1,16 @@
 library(shiny)
 
+
+
 shinyUI(fluidPage(
-  titlePanel("Grading MC Exams at the DPECS"),
+
+    HTML('<table width=100%><tr><td valign="top">
+           <H1>Grading MC Exams at the DPECS</H1>
+           </td><td align="right">
+           <img src="./Logo-EUR-black.png" width="150" alt="Erasmus University">
+           </td></tr></table>'),
   
   sidebarLayout(
-    
     # Sidebar panel for inputs ----
     sidebarPanel(
       
@@ -19,7 +25,7 @@ shinyUI(fluidPage(
     ),
     
     mainPanel(
-      uiOutput("titel"), 
+      uiOutput("subtitle"), 
       tabsetPanel(type = "tabs",
                   tabPanel("Table", tableOutput("view")),
                   tabPanel("Graph/Formular", uiOutput("formula"), plotOutput("graph")),
@@ -29,3 +35,5 @@ shinyUI(fluidPage(
   )
 ))
 
+
+  
