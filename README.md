@@ -7,4 +7,4 @@
 
 ### ShinyApp
 
-The ESSB grading for shinyapp can be found under: https://www.shinyapps.io/admin/#/application/2900553
+The ESSB grading for shinyapp is available online: https://lindemann.shinyapps.io/essb_grading
