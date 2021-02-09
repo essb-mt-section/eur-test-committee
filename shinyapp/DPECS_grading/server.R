@@ -21,9 +21,9 @@ print_table_wide <- function(schema) {
 }
 
 print_table_long <- function(schema) {
-    df <- arrange(grading_table(schema, omit_low_scores = TRUE), 
+    df <- arrange(grading_table(schema, omit_low_scores = TRUE),
                   desc(score))
-    
+
 }
 
 grading_formular <- function(schema) {
@@ -59,22 +59,22 @@ explanation_html <- function(nq, nc) {
                  "DPECS uses a single linear interpolation between the point of the pass-fail criterion, ",
                  "\\(P_1\\), and the highest possible grade, \\(P_2\\). The smallest passing score has to fulfil the ",
                  "criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction.",
-                 "</p>") 
-    
+                 "</p>")
+
     rtn = paste0(rtn, "<p>",
                  "If we have n=",nq, " questions with ",nc," choices, the guessing correction is: $$c_g=", nq, "/", nc, "=", g, "$$ ",
                  "With a knowledge criterion \\(k_p=.55\\) and a passing grade \\(g_{p}=5.5\\), the passing score \\(s_p\\) is :",
                  "$$s_p = k_p ( n - c_g) + c_g = .55\\, (",nq, "-", g, ")+",g,"= ",sp,"$$",
                  "Thus, if the highest possible grade is \\(g_{h}=10\\), the interpolation uses the following two points: ",
                  "$$P_1 = (s_p, g_p)=(", sp, ",5.5)$$ $$P_2 =(n, g_h)=(",nq, ",10) $$",
-                 "</p>") 
-    
+                 "</p>")
+
     return(rtn)
 }
 
 # Define server logic to summarize and view selected dataset ----
 shinyServer(function(input, output) {
-    
+
     schema <- reactive({
         n_choices = as.numeric(input$n_choices)
         grading_schema(n_questions = input$n_quest,
@@ -82,7 +82,7 @@ shinyServer(function(input, output) {
                            rounding_up_passing_score = FALSE,
                            bilinear_interpolation = FALSE)
     })
-    
+
     # Show the first "n" observations ----
     output$view <- renderTable(na = "", digits = 1, {
         print_table_long(schema())
@@ -93,16 +93,16 @@ shinyServer(function(input, output) {
     output$formula <- renderUI({
         withMathJax(HTML(paste("<p>", grading_formular(schema()), "</p>")))
     })
-    
+
     output$explanation <- renderUI({
         withMathJax(HTML(explanation_html(input$n_quest, as.numeric(input$n_choices))))
     })
-    
+
     output$subtitle <- renderUI({
-        rtn <- paste0("<H4>Grading procedure for ", input$n_quest, 
+        rtn <- paste0("<H4>Grading procedure for ", input$n_quest,
                       " questions with ",input$n_choices," choices</H4>")
         HTML(rtn)
     })
 
-    
+
 })
