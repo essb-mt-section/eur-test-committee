@@ -14,7 +14,7 @@ How to export JSON files for Remindo website? Click on "Results/Analysis". Go to
 """
 
 __author__ = "Oliver Lindemann <lindemann@essb.eur.nl>"
-__version__ = "0.2"
+__version__ = "0.2.1"
 
 import os
 import json
@@ -82,7 +82,8 @@ class RemindoResults(object):
                 self._answer_dict["grade"].append(student["grade"])
                 self._answer_dict["score"].append(student["score"])
 
-                # read in responses in array, because unclear they the come in the correct order (cf "sequence_index")
+                # read in responses in array, because unclear they the come
+                # in the correct order (cf "sequence_index")
                 answers = [np.NAN] * self._n_questions
                 for item in student["sections"][0]["itemresults"]:
                     _id = item["sequence_index"] - 1
@@ -115,7 +116,8 @@ class RemindoResults(object):
                 if self._solutions is None:
                     self._solutions = sol
                 elif sol != self._solutions:
-                    raise RuntimeError("I can not handle different solutions  for different subjects? ")
+                    raise RuntimeError("I can not handle different solutions" +
+                                       " for different subjects? ")
 
             # remove ignored questions
             self._solutions = [x for c, x in enumerate(self._solutions) \
