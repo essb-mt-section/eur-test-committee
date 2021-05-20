@@ -14,7 +14,7 @@ How to export JSON files for Remindo website? Click on "Results/Analysis". Go to
 """
 
 __author__ = "Oliver Lindemann <lindemann@essb.eur.nl>"
-__version__ = "0.2.1"
+__version__ = "0.3"
 
 import os
 import json
@@ -24,7 +24,8 @@ from pandas import DataFrame
 
 class RemindoResults(object):
 
-    def __init__(self, remindo_json_file, n_questions, ignored_questions=[]):
+    def __init__(self, remindo_json_file, n_questions, ignored_questions=[],
+                 first_question_label_cnt=0):
         """Parser for Remindo JSON result files
 
         n_questions:
@@ -48,8 +49,11 @@ class RemindoResults(object):
                 "student_id":[],
                 "grade": [],
                 "score": []}
-        for x in range(n_questions):
-            self._answer_dict["Q{}".format(x)] = [] # answers to questions
+
+        self.question_labels = ["Q{}".format(x + first_question_label_cnt) \
+                                for x in range(n_questions)]
+        for x in self.question_labels:
+            self._answer_dict[x] = [] # answers to questions
 
         self._course_students = {}
         for student in self.data_dict:
@@ -91,8 +95,7 @@ class RemindoResults(object):
                                 item["response"]["RESPONSE"]["candidateResponse"])
 
                 # copy response to data structure
-                for x in range(self._n_questions):
-                    _id = "Q{}".format(x)
+                for x, _id in enumerate(self.question_labels):
                     if x not in self._ignored_questions:
                         self._answer_dict[_id].append(answers[x])
                     elif _id in self._answer_dict:
@@ -125,15 +128,17 @@ class RemindoResults(object):
 
         return self._solutions
 
-    def save_csv_files(self):
+    def save_csv_files(self, solutions=True, answers=True):
 
-        fl_name = os.path.splitext(self._json_file)[0]
-        # save solutions
-        with open(fl_name + ".solutions.csv", "w+") as fl:
-            for s in self.solutions:
-                fl.write("{}\n".format(s))
+        if solutions:
+            fl_name = os.path.splitext(self._json_file)[0]
+            # save solutions
+            with open(fl_name + ".solutions.csv", "w+") as fl:
+                for s in self.solutions:
+                    fl.write("{}\n".format(s))
 
-        self.answers_and_grades.to_csv(fl_name + ".answers.csv")
+        if answers:
+            self.answers_and_grades.to_csv(fl_name + ".answers.csv")
 
 
 ## Helper
