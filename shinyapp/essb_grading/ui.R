@@ -1,12 +1,19 @@
 library(shiny)
 
+eur_title <- function(title) {
+  rtn = paste0('<table style="background-color:#FFA300" width=100%>',
+               '<tr><td valign="middle" style="padding-left: 10px;" >')
+  rtn = paste0(rtn, "<H1>", title, "</H1>")
+  rtn = paste0(rtn, '</td><td align="right" style="padding-right: 20px;">
+        <img src="./Logo-EUR-black.png" width="150" alt="Erasmus University">
+        </td></tr></table>',
+               '<br><br>')
+  return(HTML(rtn))
+}
+
 shinyUI(fluidPage(
 
-  HTML('<table width=100%><tr><td valign="top">
-           <H1>Grading MC Exams at the DPECS</H1>
-           </td><td align="right">
-           <img src="./Logo-EUR-black.png" width="200" alt="Erasmus University">
-           </td></tr></table>'),
+  eur_title("Grading MC Exams at the DPECS"),
 
   sidebarLayout(
     # Sidebar panel for inputs ----
