@@ -1,5 +1,7 @@
-# (c) O. Lindemann, MIT licence
 # version 0.3
+#
+# (c) Oliver Lindemann
+# MIT licence
 
 #' Generate regression function to convert multiple choice scores to grades
 #'
