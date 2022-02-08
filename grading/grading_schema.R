@@ -1,5 +1,5 @@
 # (c) O. Lindemann, MIT licence
-# version 0.2.2
+# version 0.3
 
 #' Generate regression function to convert multiple choice scores to grades
 #'
@@ -116,11 +116,11 @@ grading_schema <- function(n_questions,
 #' 
 #' @param scorces          the scores to be converted
 #' @param grading_schema   the grading schema object
-#' @param rounding_digits  number of digits of rounding (default: 2)
+#' @param rounding_digits  number of digits of rounding (default: 1)
 #' 
 #' @seealso documentation and examples in grading_schema
 #' 
-grades <- function(scores, grading_schema, rounding_digits=2) {
+grades <- function(scores, grading_schema, rounding_digits=1) {
   idx_na <- 
   gs <- grading_schema
   grd = round(gs$interp_pass$const + gs$interp_pass$b * scores,
@@ -138,8 +138,10 @@ grades <- function(scores, grading_schema, rounding_digits=2) {
   inverse_grading_scale = gs$lowest_grade > gs$highest_grade
   if (inverse_grading_scale) {
     grd[grd > gs$lowest_grade] = gs$lowest_grade
+    grd[grd < gs$highest_grade] = gs$highest_grade
   } else {
     grd[grd < gs$lowest_grade] = gs$lowest_grade
+    grd[grd > gs$highest_grade] = gs$highest_grade
   }
   return(grd)
 }
