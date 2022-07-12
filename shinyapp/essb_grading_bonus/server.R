@@ -123,8 +123,8 @@ shinyServer(function(input, output) {
         rtn <- paste0("<H4>Grading procedure for ", input$n_quest,
                       " questions with ",input$n_choices," choices</H4>")
         if (input$n_bonus_quest>0) {
-          rtn <- paste0(rtn, "<H4><b>Bonus questions</b>: ", input$n_bonus_quest, " out of  ",
-                              input$n_quest, "</H4")
+          rtn <- paste0(rtn, "<H4>", input$n_bonus_quest, " of  ",
+                              input$n_quest, " questions are <b>bonus</b> questions</H4>")
         }
         HTML(rtn)
     })
