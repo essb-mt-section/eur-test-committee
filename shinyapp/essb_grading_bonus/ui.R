@@ -39,6 +39,7 @@ shinyUI(fluidPage(
     mainPanel(
       uiOutput("subtitle"),
       tabsetPanel(type = "tabs",
+                  id = "panels",
                   tabPanel("Table", tableOutput("view")),
                   tabPanel("Graph/Formular", uiOutput("formula"), plotOutput("graph")),
                   tabPanel("Explanation", uiOutput("explanation"),

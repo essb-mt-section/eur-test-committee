@@ -82,7 +82,9 @@ explanation_html <- function(nq, nb, nc) {
                  "If we have n=",nq, " questions with ",nc," choices, the guessing correction is: $$c_g=", nq, "/", nc, "=", g, "$$ ",
                  "With a knowledge criterion \\(k_p=.55\\) and a passing grade \\(g_{p}=5.5\\), the passing score \\(s_p\\) is :",
                  "$$s_p = k_p ( n - c_g) + c_g = .55\\, (",nq, "-", g, ")+",g,"= ",sp,"$$",
-                 "Thus, if the highest possible grade is \\(g_{h}=10\\), the interpolation uses the following two points: ",
+                 "Thus, if the highest possible grade is \\(g_{h}=10\\), the ",
+                 actionLink("link_to_graph", "resulting interpolation"),
+                 " uses the following two points: ",
                  "$$P_1 = (s_p, g_p)=(", sp, ",5.5)$$ $$P_2 =(n, g_h)=(",nq, ",10) $$",
                  "</p>")
 
@@ -129,5 +131,8 @@ shinyServer(function(input, output) {
         HTML(rtn)
     })
 
+    observeEvent(input$link_to_graph, {
+      updateTabsetPanel(inputId="panels", selected="Graph/Formular")
+    })
 
 })
