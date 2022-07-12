@@ -21,13 +21,20 @@ shinyUI(fluidPage(
 
       numericInput(inputId = "n_quest",
                    label = "Number of MC Questions:",
+                   min = 5,
                    value = 40),
 
       selectInput(inputId = "n_choices",
                   label = "Number of Choices:",
                   choices=c(2,3,4,5),
                   selected = 4),
-    ),
+
+      numericInput(inputId = "n_bonus_quest",
+                   label = "Number of Bonus Questions:",
+                   min=0, max=10, value = 0),
+
+
+      ),
 
     mainPanel(
       uiOutput("subtitle"),

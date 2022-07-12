@@ -1,4 +1,4 @@
-# version 0.3
+# version 0.4
 #
 # (c) Oliver Lindemann
 # MIT licence
@@ -20,8 +20,8 @@
 #'                                  be used (default: TRUE)
 #'
 #' @return grading schema object that can be used to calculate the grades with
-#'         the `grades` function. 
-#'         
+#'         the `grades` function.
+#'
 #'         A grading schema comprises in addition to the parameter
 #'         $interp_pass: constant and regression weight of linear
 #'                       interpolation of passing scores
@@ -115,15 +115,14 @@ grading_schema <- function(n_questions,
 }
 
 #' Calculating grades from scores using grading schema object
-#' 
+#'
 #' @param scorces          the scores to be converted
 #' @param grading_schema   the grading schema object
 #' @param rounding_digits  number of digits of rounding (default: 1)
-#' 
+#'
 #' @seealso documentation and examples in grading_schema
-#' 
+#'
 grades <- function(scores, grading_schema, rounding_digits=1) {
-  idx_na <- 
   gs <- grading_schema
   grd = round(gs$interp_pass$const + gs$interp_pass$b * scores,
               rounding_digits)
@@ -149,21 +148,28 @@ grades <- function(scores, grading_schema, rounding_digits=1) {
 }
 
 #' grading table of a schema
-#' 
+#'
 #' @param schema
-#' @param omit_low_scores  omits the very lower scores for wich the grade is 1
-#' @return grading table as data frame 
-grading_table <- function(schema, omit_low_scores=FALSE) {
-  s = c(0:schema$n_questions)
-  df <- data.frame(score=s, grade=grades(s, schema))
+#' @param omit_low_scores  omits the very lower scores for which the grade is 1
+#' @param max_score  if not defines n_questions will used as max score
+#' @param rounding_digits  number of digits of rounding (default: 1)
+#' @return grading table as data frame
+grading_table <- function(schema, omit_low_scores=FALSE, max_score=NA,
+                          rounding_digits=1) {
+  if (is.na(max_score)) {
+    max_score = schema$n_questions
+  }
+  s = c(0:max_score)
+  df <- data.frame(score=s, grade=grades(s, schema,
+                                         rounding_digits = rounding_digits))
   if (omit_low_scores) {
     i = max(which(df$grade==1))
     df <- df[i:nrow(df), ]
   }
   return(df)
 }
-  
-  
+
+
 .lin_interpol <- function(p1, p2) {
   b = (p2[2]-p1[2]) / (p2[1]-p1[1])
   c = p2[2] - b*p2[1]
