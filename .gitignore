@@ -7,3 +7,5 @@
 *.html
 rsconnect/
 *.dcf
+*.pdf
+test*
