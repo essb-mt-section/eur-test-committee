@@ -10,7 +10,7 @@ output:
 <!-- Version 2 -->
 
 ```{r, echo=FALSE}
-source("grading_schema.R")
+source("linear_interpolation_grading_schema.R")
 library(ggplot2)
 library(knitr)
 
