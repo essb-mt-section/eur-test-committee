@@ -62,7 +62,7 @@ explanation_html <- function() {
 
                    $$ g_i = \\frac{x_i - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} * 10$$ </p>")
 
-    rtn = paste0(rtn, "<p>The result will be truncated to one decimal place.</p>")
+    rtn = paste0(rtn, "<p>The result will be truncated to one decimal place (and not rounded).</p>")
 
     return(rtn)
 }
