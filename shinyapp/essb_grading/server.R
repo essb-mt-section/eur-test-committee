@@ -1,7 +1,10 @@
+# VERSION 2
+# + new handling of bonus questions
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
-source("grading_schema.R")
+source("essb_grading_schema.R")
 
 
 print_table_wide <- function(schema) {
@@ -20,40 +23,51 @@ print_table_wide <- function(schema) {
     return(df)
 }
 
-print_table_long <- function(schema, n_questions=NA) {
-    df <- arrange(grading_table(schema, omit_low_scores = TRUE,
-                                max_score=n_questions),
+print_table_long <- function(schema) {
+    df <- arrange(grading_table(schema, omit_low_scores = TRUE),
                   desc(score))
 
 }
 
-grading_formular <- function(schema, n_bonus_quest) {
-    rtn = "Formular: $$grade = \\begin{cases}"
-    if (n_bonus_quest>0) {
-      rtn = paste0(rtn, 10, " & \\text{if } score \\geq ", schema$n_questions,
-                 "\\\\")
-      rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
-                   "\\cdot score & \\text{if } ", round(schema$lowest_grade_breakpoint,1), " < score < ", schema$n_questions,
-                   "\\\\")
+grading_formular <- function(schema) {
+  rtn = "<p/>"
 
-    } else {
-      rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
-                   "\\cdot score & \\text{if } score > ", round(schema$lowest_grade_breakpoint,1),
-                   "\\\\")
-    }
-    rtn = paste0(rtn, schema$lowest_grade, " & \\text{if } score \\leq",
-                 round(schema$lowest_grade_breakpoint, 1))
-    return(paste0(rtn," \\end{cases}$$"))
+  c_g = round(schema$c_g, 3)
+  d = (schema$max_score - schema$c_g) / 10
+  rtn = paste0(rtn, "The grades \\(g_i\\) for the test scores \\(x_i\\) are given by
+         $$\\begin{align}
+         g_i &= \\frac{x_i - ", c_g, "}{", schema$max_score , "-", c_g, "} * 10
+             = \\frac{x_i - ", c_g, "}{", round(d, 3), "}
+         \\end{align}$$
+         ")
+
+   #rtn = "Formular: $$grade = \\begin{cases}"
+    #if (n_bonus>0) {
+    #  rtn = paste0(rtn, 10, " & \\text{if } score \\geq ", schema$n_questions,
+    #             "\\\\")
+    #  rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
+    #               "\\cdot score & \\text{if } ", round(schema$lowest_grade_breakpoint,1), " < score < ", schema$n_questions,
+    #               "\\\\")
+
+    #} else {
+    #  rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
+    #               "\\cdot score & \\text{if } score > ", round(schema$lowest_grade_breakpoint,1),
+    #               "\\\\")
+    #}
+    #rtn = paste0(rtn, schema$lowest_grade, " & \\text{if } score \\leq",
+    #             round(schema$lowest_grade_breakpoint, 1))
+    paste0(rtn," </p>")
+    return(rtn)
 }
 
 
 plot_grades <- function(schema, max_score) {
-    points = data.frame(x=c(schema$passing_score, schema$n_questions),
-                        y=c(schema$passing_grade, schema$highest_grade))
+    #points = data.frame(x=c(schema$passing_score, schema$corr_n_quest),
+    #                    y=c(schema$passing_grade, schema$highest_grade))
     d = grading_table(schema, max_score=max_score, rounding_digits=3)
     ggplot() +
         geom_line(data=d, aes(x=score, y=grade)) +
-        geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
+        #geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
         geom_hline(yintercept = schema$passing_grade, colour = "#999999") +
         scale_y_continuous(name="Grade", breaks=schema$lowest_grade:schema$highest_grade) +
         xlab('Test Score') +
@@ -61,32 +75,21 @@ plot_grades <- function(schema, max_score) {
         theme(text = element_text(size = 20))
 }
 
-explanation_html <- function(nq, nb, nc) {
-    # nq: n questions, nc: numbre choices, nb = number of bonus questions
-    g = round(nq/nc, 2)
-    sp = round(.55 * (nq- g) + g, 2)
-    nq = nq - nb
-    rtn = ""
-    if (nb>0) {
-      rtn = paste0(rtn, "<p>",
-                   "If ", nb, " of ", nq+nb, " questions are considered as bonus questions, the calculation of the ",
-                   "pass-fail criterion will be based on <b>", nq, " questions</b>.</p>")
-    }
-    rtn = paste0(rtn, "<p>",
-                 "To calculate the grades from the scores of a multiple choices test, you have to make ",
-                 "a linear interpolation between the point of the pass-fail criterion, ",
-                 "\\(P_1\\), and the highest possible grade, \\(P_2\\). The smallest passing score has to fulfil the ",
-                 "criterion of at least 55% knowledge, that is, 55% correct questions after guessing correction.",
-                 "</p>")
-    rtn = paste0(rtn, "<p>",
-                 "If we have n=",nq, " questions with ",nc," choices, the guessing correction is: $$c_g=", nq, "/", nc, "=", g, "$$ ",
-                 "With a knowledge criterion \\(k_p=.55\\) and a passing grade \\(g_{p}=5.5\\), the passing score \\(s_p\\) is :",
-                 "$$s_p = k_p ( n - c_g) + c_g = .55\\, (",nq, "-", g, ")+",g,"= ",sp,"$$",
-                 "Thus, if the highest possible grade is \\(g_{h}=10\\), the ",
-                 actionLink("link_to_graph", "resulting interpolation"),
-                 " uses the following two points: ",
-                 "$$P_1 = (s_p, g_p)=(", sp, ",5.5)$$ $$P_2 =(n, g_h)=(",nq, ",10) $$",
-                 "</p>")
+explanation_html <- function() {
+    rtn = "<p>Variables: $$\\begin{align}
+          N &= \\text{number of questions} \\\\
+          n_\\text{choices} &= \\text{number of choices in each question} \\\\
+          n_\\text{disabled} &= \\text{number of disabled questions} \\\\
+          n_\\text{bonus} &= \\text{number of bonus questions}  \\\\
+          n_\\text{full} &= \\text{number of full point questions}
+           \\end{align}$$ </p>"
+
+    rtn = paste0(rtn, "<p>Guessing correction is defined as
+                 $$c_g = \\frac{N - n_\\text{disabled} - n_\\text{full}}{n_\\text{choices}}$$ </p>")
+
+    rtn = paste0(rtn, "<p>The grades \\(g_i\\) for the test scores \\(x_i\\) are given by
+
+                   $$ g_i = \\frac{x_i - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} * 10$$ </p>")
 
     return(rtn)
 }
@@ -95,40 +98,41 @@ explanation_html <- function(nq, nb, nc) {
 shinyServer(function(input, output) {
 
     schema <- reactive({
-        n_choices = as.numeric(input$n_choices)
-        nq = input$n_quest - input$n_bonus_quest
-        grading_schema(n_questions = nq,
-                           guessing_score = nq/n_choices,
-                           rounding_up_passing_score = FALSE,
-                           bilinear_interpolation = FALSE)
+        essb_grading_schema(n_questions = input$n_quest,
+                            n_choices = as.numeric(input$n_choices),
+                            n_bonus=as.numeric(input$n_bonus),
+                            n_disabled=as.numeric(input$n_disabled),
+                            n_full=as.numeric(input$n_full_points))
     })
 
     # Show the first "n" observations ----
     output$view <- renderTable(na = "", digits = 1, {
-        print_table_long(schema(), input$n_quest)
+        print_table_long(schema())
     })
     output$graph <- renderPlot({
         plot_grades(schema(), max_score = input$n_quest)
     })
     output$formula <- renderUI({
-        withMathJax(HTML(paste("<p>", grading_formular(schema(),
-                                          n_bonus_quest = input$n_bonus_quest), "</p>")))
+        withMathJax(HTML(grading_formular(schema())))
     })
 
     output$explanation <- renderUI({
-        withMathJax(HTML(explanation_html(nq=input$n_quest,
-                                          nb=input$n_bonus_quest,
-                                          nc=as.numeric(input$n_choices))))
+        withMathJax(HTML(explanation_html()))
     })
 
     output$subtitle <- renderUI({
-        rtn <- paste0("<H4>Grading procedure for ", input$n_quest,
-                      " questions with ",input$n_choices," choices</H4>")
-        if (input$n_bonus_quest>0) {
-          rtn <- paste0(rtn, "<H4>", input$n_bonus_quest, " of  ",
-                              input$n_quest, " questions are <b>bonus</b> questions</H4>")
-        }
-        HTML(rtn)
+      n = input$n_quest  - as.numeric(input$n_disabled)
+      rtn <- paste0("<H3>Grading procedure for ", n,
+                      " questions with ",input$n_choices," choices</H3>")
+      rtn <- paste0(rtn, "<H4>")
+      if (input$n_bonus > 0) {
+        rtn <- paste0(rtn, " and ", input$n_bonus, " <b>bonus</b> question(s)")
+      }
+      if (input$n_full_points > 0) {
+        rtn <- paste0(rtn, " and ", input$n_full_points, " <b>full point</b> question(s)")
+      }
+      rtn <- paste0(rtn, "</H4>")
+      HTML(rtn)
     })
 
     observeEvent(input$link_to_graph, {
