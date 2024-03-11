@@ -2,8 +2,24 @@
 
 ## Calculation grades ESSB
 
-The script `essb_grading_schema.R`  provides functions to generate a grading schemata and to calculate grades as used at the DPECS.
 
+```R
+source("essb_grading_schema.R")
+
+# define  grading schema
+schema <- essb_grading_schema(n_questions = 40, n_choices = 4, 
+                  n_full = 5, n_disabled = 0, n_bonus = 0)
+
+# convert vector with my scorce to grades
+scores = c(23, 26, 27, 28, 17, 34, 40, 32, 11)
+grades(scores, schema)
+
+# print grading table
+grading_table(schema)
+```
+
+
+The script `essb_grading_schema.R`  provides functions to generate a grading schemata and to calculate grades as used at the DPECS.
 
 ## linear interpolation
 
