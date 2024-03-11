@@ -19,6 +19,7 @@ shinyUI(fluidPage(
     # Sidebar panel for inputs ----
     sidebarPanel(
 
+      h3("Exam Type"),
       numericInput(inputId = "n_quest",
                    label = "Number of MC Questions:",
                    min = 5,
@@ -29,12 +30,26 @@ shinyUI(fluidPage(
                   choices=c(2,3,4,5),
                   selected = 4),
 
-      numericInput(inputId = "n_bonus_quest",
-                   label = "Number of Bonus Questions:",
-                   min=0, max=10, value = 0),
 
+      h3("Adjustments"),
 
-      ),
+      h5("Number of Adjustments"),
+
+      selectInput(inputId = "n_disabled",
+                  label = "Disabled:",
+                  choices=c(0,1,2,3),
+                  selected = 0),
+
+      selectInput(inputId = "n_bonus",
+                   label = "Bonus:",
+                  choices=c(0,1,2,3),
+                  selected = 0),
+
+      selectInput(inputId = "n_full_points",
+                   label = "Full Points:",
+                  choices=c(0,1,2,3),
+                  selected = 0),
+    ),
 
     mainPanel(
       uiOutput("subtitle"),

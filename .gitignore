@@ -9,3 +9,4 @@ rsconnect/
 *.dcf
 *.pdf
 test*
+.vscode/

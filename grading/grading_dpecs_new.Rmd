@@ -1,0 +1,51 @@
+---
+title: "Grading Multiple Choice Exams at the DPECS"
+author: Test Committee
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+<!-- Version 2 -->
+
+```{r, echo=FALSE}
+source("essb_grading_schema.R")
+library(knitr)
+
+knitr::opts_chunk$set(fig.width=8, fig.height=3)
+
+plot_grades <- function(s) {
+  points = data.frame(x=c(s$dpecs$passing_score, s$dpecs$n_questions),
+                  y=c(s$dpecs$passing_grade, s$dpecs$highest_grade))
+  ggplot() +
+    #risbo
+    geom_line(data=grading_table(s$dpecs), aes(x=score, y=grade)) +
+    geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
+    geom_hline(yintercept = s$dpecs$passing_grade, colour = "#999999") +
+    #scale_color_manual(values=c("#CC6666", "#9999CC" )) +
+    #labs(color="Method") +
+    scale_y_continuous(name="Grade", breaks=s$risbo$lowest_grade:s$risbo$highest_grade) +
+    xlab('Test Score') +
+    theme_bw()
+}
+```
+
+
+## Grading procedure
+
+
+Number of questions: $N$
+Number of choices: $n_\text{choices}$
+
+Number of disabled: $n_\text{disabled}$
+Number of bonus question: $n_\text{bonus}$
+Number of full points question: $n_\text{full}$
+
+
+Guessing correction is defined as:
+$$c_g = \frac{N - n_\text{disabled} - n_\text{full}}{n_\text{choices}}$$
+The grades, $g_i$, for the test score x_i calculated via this formular:
+
+$$ g_i = \frac{x_i - c_g}{N - n_\text{disabled} - n_\text{bonus} - c_g} * 10$$
+
