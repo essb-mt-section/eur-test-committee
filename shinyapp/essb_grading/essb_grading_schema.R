@@ -10,7 +10,8 @@ essb_grading_schema <- function(n_questions,
                                 n_full=0,
                                 lowest_grade=1,
                                 highest_grade = 10,
-                                passing_grade=5.5) {
+                                passing_grade=5.5
+                                ) {
 
   corr_n_quest = n_questions - n_disabled
   rtn <- list(
@@ -35,15 +36,23 @@ essb_grading_schema <- function(n_questions,
 #'
 #' @param scores   the scores to be converted
 #' @param schema   the essb grading schema object
-#' @param rounding_digits  number of digits of rounding (default: 1)
+#' @param decimals  number of digits of rounding (default: 1)
+#' @param rounding rounding and not truncating to decimal place (default: FALSE)
 #'
 #' @seealso documentation and examples in grading_schema
 #'
-grades <- function(scores, schema, rounding_digits=1) {
+grades <- function(scores,
+                   schema,
+                   decimals=1,
+                   rounding=FALSE) {
   gs <- schema
 
   x <- gs$highest_grade * (scores - gs$c_g) / (gs$max_score - gs$c_g)
-  x <- round(x, rounding_digits)
+  if (rounding) {
+    x <- round(x, decimals)
+  } else {
+    x <- floor(x*10^decimals)/10^decimals
+  }
   x[x<gs$lowest_grade] = gs$lowest_grade
   x[x>gs$highest_grade] = gs$highest_grade
   return(x)
@@ -55,16 +64,21 @@ grades <- function(scores, schema, rounding_digits=1) {
 #' @param schema
 #' @param omit_low_scores  omits the very lower scores for which the grade is 1
 #' @param max_score  if not defines corr_n_quest of schema is used
-#' @param rounding_digits  number of digits of rounding (default: 1)
+#' @param decimals  number of digits of rounding (default: 1)
+#' @param rounding rounding and not truncating to decimal place (default: FALSE)
 #' @return grading table as data frame
-grading_table <- function(schema, omit_low_scores=FALSE,  rounding_digits=1,
-                          max_score=NA) {
+grading_table <- function(schema,
+                          omit_low_scores=FALSE,
+                          decimals=1,
+                          max_score=NA,
+                          rounding=FALSE) {
   if (is.na(max_score)) {
     max_score = schema$corr_n_quest
   }
   s = c(0:max_score)
   df <- data.frame(score=s, grade=grades(s, schema,
-                                         rounding_digits = rounding_digits))
+                                         decimals = decimals,
+                                         rounding=rounding))
   if (omit_low_scores) {
     i = max(which(df$grade==1))
     df <- df[i:nrow(df), ]

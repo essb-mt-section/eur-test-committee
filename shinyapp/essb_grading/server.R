@@ -7,24 +7,10 @@ library(dplyr)
 source("essb_grading_schema.R")
 
 
-print_table_wide <- function(schema) {
-    df = data.frame()
-    x = 1
-    c = 1
-    while(TRUE) {
-        scores = x:(x+19)
-        scores[scores>schema$n_questions] = NA
-        df[1:20, paste0("Score", c)] = scores
-        df[1:20, paste0("Grade", c)] = grades(scores, schema, rounding_digits = 1)
-        x = x + 20
-        c = c + 1
-        if (x>schema$n_questions) break
-    }
-    return(df)
-}
-
-print_table_long <- function(schema) {
-    df <- arrange(grading_table(schema, omit_low_scores = TRUE),
+print_table_long <- function(schema, decimals, rounding) {
+    df <- arrange(grading_table(schema, omit_low_scores = TRUE,
+                                decimals=decimals,
+                                rounding=rounding),
                   desc(score))
 
 }
@@ -40,22 +26,6 @@ grading_formular <- function(schema) {
              = \\frac{x_i - ", c_g, "}{", round(d, 3), "}
          \\end{align}$$
          ")
-
-   #rtn = "Formular: $$grade = \\begin{cases}"
-    #if (n_bonus>0) {
-    #  rtn = paste0(rtn, 10, " & \\text{if } score \\geq ", schema$n_questions,
-    #             "\\\\")
-    #  rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
-    #               "\\cdot score & \\text{if } ", round(schema$lowest_grade_breakpoint,1), " < score < ", schema$n_questions,
-    #               "\\\\")
-
-    #} else {
-    #  rtn = paste0(rtn, round(schema$interp_pass$const, 3), "+", round(schema$interp_pass$b, 3),
-    #               "\\cdot score & \\text{if } score > ", round(schema$lowest_grade_breakpoint,1),
-    #               "\\\\")
-    #}
-    #rtn = paste0(rtn, schema$lowest_grade, " & \\text{if } score \\leq",
-    #             round(schema$lowest_grade_breakpoint, 1))
     paste0(rtn," </p>")
     return(rtn)
 }
@@ -64,7 +34,8 @@ grading_formular <- function(schema) {
 plot_grades <- function(schema, max_score) {
     #points = data.frame(x=c(schema$passing_score, schema$corr_n_quest),
     #                    y=c(schema$passing_grade, schema$highest_grade))
-    d = grading_table(schema, max_score=max_score, rounding_digits=3)
+    d = grading_table(schema, max_score=max_score, decimals=1,
+                      rounding=FALSE)
     ggplot() +
         geom_line(data=d, aes(x=score, y=grade)) +
         #geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
@@ -91,6 +62,8 @@ explanation_html <- function() {
 
                    $$ g_i = \\frac{x_i - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} * 10$$ </p>")
 
+    rtn = paste0(rtn, "<p>The result will be truncated to one decimal place.</p>")
+
     return(rtn)
 }
 
@@ -107,7 +80,7 @@ shinyServer(function(input, output) {
 
     # Show the first "n" observations ----
     output$view <- renderTable(na = "", digits = 1, {
-        print_table_long(schema())
+        print_table_long(schema(), decimals=1, rounding=FALSE)
     })
     output$graph <- renderPlot({
         plot_grades(schema(), max_score = input$n_quest)
