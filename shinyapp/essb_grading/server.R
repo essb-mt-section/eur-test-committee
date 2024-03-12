@@ -84,11 +84,11 @@ shinyServer(function(input, output) {
     # Show the first "n" observations ----
     output$view <- renderTable(na = "", digits = decimals, {
         print_table_long(schema(), decimals=decimals(),
-                         truncating=input$trunc=="truncate")
+                         truncating=input$trunc=="truncating")
     })
     output$graph <- renderPlot({
         plot_grades(schema(), max_score = input$n_quest,
-                    truncating=input$trunc=="truncate")
+                    truncating=input$trunc=="truncating")
     })
     output$formula <- renderUI({
         withMathJax(HTML(grading_formular(schema())))
