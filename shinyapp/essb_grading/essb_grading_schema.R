@@ -37,21 +37,21 @@ essb_grading_schema <- function(n_questions,
 #' @param scores   the scores to be converted
 #' @param schema   the essb grading schema object
 #' @param decimals  number of digits of rounding (default: 1)
-#' @param rounding rounding and not truncating to decimal place (default: FALSE)
+#' @param truncating   truncating and not rounding to decimal place (default: FALSE)
 #'
 #' @seealso documentation and examples in grading_schema
 #'
 grades <- function(scores,
                    schema,
                    decimals=1,
-                   rounding=FALSE) {
+                   truncating=FALSE) {
   gs <- schema
 
   x <- gs$highest_grade * (scores - gs$c_g) / (gs$max_score - gs$c_g)
-  if (rounding) {
-    x <- round(x, decimals)
-  } else {
+  if (truncating) {
     x <- floor(x*10^decimals)/10^decimals
+  } else {
+    x <- round(x, decimals)
   }
   x[x<gs$lowest_grade] = gs$lowest_grade
   x[x>gs$highest_grade] = gs$highest_grade
@@ -65,20 +65,20 @@ grades <- function(scores,
 #' @param omit_low_scores  omits the very lower scores for which the grade is 1
 #' @param max_score  if not defines corr_n_quest of schema is used
 #' @param decimals  number of digits of rounding (default: 1)
-#' @param rounding rounding and not truncating to decimal place (default: FALSE)
+#' @param truncating   truncating and not rounding to decimal place (default: FALSE)
 #' @return grading table as data frame
 grading_table <- function(schema,
                           omit_low_scores=FALSE,
                           decimals=1,
                           max_score=NA,
-                          rounding=FALSE) {
+                          truncating=FALSE) {
   if (is.na(max_score)) {
     max_score = schema$corr_n_quest
   }
   s = c(0:max_score)
   df <- data.frame(score=s, grade=grades(s, schema,
                                          decimals = decimals,
-                                         rounding=rounding))
+                                         truncating=truncating))
   if (omit_low_scores) {
     i = max(which(df$grade==1))
     df <- df[i:nrow(df), ]

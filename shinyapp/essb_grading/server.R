@@ -7,10 +7,11 @@ library(dplyr)
 source("essb_grading_schema.R")
 
 
-print_table_long <- function(schema, decimals, rounding) {
+
+print_table_long <- function(schema, decimals, truncating) {
     df <- arrange(grading_table(schema, omit_low_scores = TRUE,
                                 decimals=decimals,
-                                rounding=rounding),
+                                truncating=truncating),
                   desc(score))
 
 }
@@ -31,11 +32,11 @@ grading_formular <- function(schema) {
 }
 
 
-plot_grades <- function(schema, max_score) {
+plot_grades <- function(schema, max_score, truncating) {
     #points = data.frame(x=c(schema$passing_score, schema$corr_n_quest),
     #                    y=c(schema$passing_grade, schema$highest_grade))
     d = grading_table(schema, max_score=max_score, decimals=1,
-                      rounding=FALSE)
+                      truncating=truncating)
     ggplot() +
         geom_line(data=d, aes(x=score, y=grade)) +
         #geom_point(data = points, aes(x,y), size=3, alpha = 0.75) +
@@ -62,7 +63,7 @@ explanation_html <- function() {
 
                    $$ g_i = \\frac{x_i - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} * 10$$ </p>")
 
-    rtn = paste0(rtn, "<p>The result will be truncated to one decimal place (and not rounded).</p>")
+    ## rtn = paste0(rtn, "<p>The result will be truncated to one decimal place (and not rounded).</p>")
 
     return(rtn)
 }
@@ -76,14 +77,18 @@ shinyServer(function(input, output) {
                             n_bonus=as.numeric(input$n_bonus),
                             n_disabled=as.numeric(input$n_disabled),
                             n_full=as.numeric(input$n_full_points))
+
     })
+    decimals <- reactive(as.numeric(input$decimals))
 
     # Show the first "n" observations ----
-    output$view <- renderTable(na = "", digits = 1, {
-        print_table_long(schema(), decimals=1, rounding=FALSE)
+    output$view <- renderTable(na = "", digits = decimals, {
+        print_table_long(schema(), decimals=decimals(),
+                         truncating=input$trunc=="truncate")
     })
     output$graph <- renderPlot({
-        plot_grades(schema(), max_score = input$n_quest)
+        plot_grades(schema(), max_score = input$n_quest,
+                    truncating=input$trunc=="truncate")
     })
     output$formula <- renderUI({
         withMathJax(HTML(grading_formular(schema())))

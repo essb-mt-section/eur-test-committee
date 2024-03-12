@@ -49,6 +49,18 @@ shinyUI(fluidPage(
                    label = "Full Points:",
                   choices=c(0,1,2,3),
                   selected = 0),
+
+      h4("Rounding"),
+
+      selectInput(inputId = "decimals",
+                  label = "Decimals:",
+                  choices=c(1,2,3),
+                  selected = 1),
+
+      selectInput(inputId = "trunc",
+                  label = "Type:",
+                  choices=c("rounding","truncate"),
+                  selected = "round"),
     ),
 
     mainPanel(
