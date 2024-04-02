@@ -6,6 +6,7 @@ library(ggplot2)
 library(dplyr)
 source("essb_grading_schema.R")
 
+
 print_table_long <- function(schema, decimals, truncating) {
     df <- arrange(grading_table(schema, omit_low_scores = TRUE,
                                 decimals=decimals,

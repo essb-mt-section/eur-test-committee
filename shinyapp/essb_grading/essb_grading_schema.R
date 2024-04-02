@@ -4,16 +4,6 @@
 # MIT licence
 
 
-round_half_up = function(x, digits) {
-  # round half up (R default is "round half to even")
-  # see round2() at https://stackoverflow.com/questions/12688717/round-up-from-5
-  z = abs(x)*10^digits
-  z = z + 0.5 + sqrt(.Machine$double.eps)
-  z = trunc(z)
-  z = z/10^digits
-  z*sign(x)
-}
-
 #constants
 formula_guessing_correction = "$$c_g = \\frac{N - n_\\text{disabled} - n_\\text{full}}{n_\\text{choices}}$$"
 formula_corrected_p_score = "$$ p_i^\\text{cor} =  \\frac{x_i - n_\\text{full} - c_g}{N - n_\\text{disabled} - n_\\text{bonus}  - n_\\text{full} - c_g}$$"
@@ -104,7 +94,7 @@ grading_table <- function(schema,
 }
 
 
-#' make latex grading formular for grading
+#' make latex grading formula for grading
 #'
 #' @param schema
 #' @param omit_low_sco
@@ -125,10 +115,12 @@ grading_formular <- function(schema) {
     if (schema$n_full>0) {
       denom_str = paste0(denom_str, "-", schema$n_full )
       nom_str = paste0(nom_str, "-", schema$n_full )
-      n_q = schema$n_questions - schema$n_full
-      add_full_str = paste0("* \\frac{", n_q,"}{", schema$n_questions,"} + \\frac{",schema$n_full,"}{",schema$n_questions,"}")
+      n_q = schema$n_questions - schema$n_full # questions with full
       brk = c("\\bigg(", "\\bigg)") # bracket
-      fx =  paste0("\\frac{",n_q ,"\\,x_i - ", round_half_up(n_q*(schema$c_g+schema$n_full), 3), "}{", round_half_up(schema$n_questions*denom/10, 3), "}+ \\frac{", 10*schema$n_full,"}{",schema$n_questions,"}")
+      add_full_str = paste0("* \\frac{", n_q,"}{", schema$n_questions,"} + \\frac{", schema$n_full,"}{",schema$n_questions,"}")
+      d = gcd(10*schema$n_full, schema$n_questions) # greatest common devisor
+      fx =  paste0("\\frac{",n_q ,"\\,x_i - ", round_half_up(n_q*(schema$c_g+schema$n_full), 3), "}{", round_half_up(schema$n_questions*denom/10, 3), "}",
+                   "+ \\frac{", 10*schema$n_ful/d,"}{",schema$n_questions/d,"}")
     } else {
       fx =  paste0(" \\frac{x_i - ", round_half_up(schema$c_g, 3), "}{", round_half_up(denom/10, 3), "}")
     }
@@ -137,4 +129,23 @@ grading_formular <- function(schema) {
 
     return(paste0("$$ g_i = 10 * ", brk[1], "\\frac{",  nom_str, "}{", denom_str, "}",
                   add_full_str, brk[2], " = ", fx, "$$"))
+}
+
+
+## helper
+
+round_half_up = function(x, digits) {
+  # round half up (R default is "round half to even")
+  # see round2() at https://stackoverflow.com/questions/12688717/round-up-from-5
+  z = abs(x)*10^digits
+  z = z + 0.5 + sqrt(.Machine$double.eps)
+  z = trunc(z)
+  z = z/10^digits
+  z*sign(x)
+}
+
+gcd <- function(x,y) {
+  # greatest common divisor
+  r <- x%%y;
+  return(ifelse(r, gcd(y, r), y))
 }
