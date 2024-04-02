@@ -46,13 +46,16 @@ explanation_html <- function() {
           n_\\text{full} &= \\text{number of full point questions}
            \\end{align}$$ </p>"
 
-    rtn = paste0(rtn, "<p>Guessing correction is defined as",
+    rtn = paste0(rtn, "<p>1. Guessing correction is defined as",
                  formula_guessing_correction,
                  "</p>")
 
-    rtn = paste0(rtn, "<p>The grades \\(g_i\\) for the test scores \\(x_i\\)  (including bonus & full point questions) are given by ",
+    rtn = paste0(rtn, "<p>2. For each the test scores \\(x_i\\) (including points for bonus & full point questions), you can calculate a corrected percent score, \\(p_i^\\text{cor}\\), reflecting the guessing corrected ",
+                "percent of good answers to questions that require an answer (i.e., without disabled and full point questions)",
+                 formula_corrected_p_score,
+                 "3. To calulate the grades \\(g_i\\), add the relative bonus for the full point question(s) and mutiply it by 10",
                  formula_grade,
-                 "Thus, if the exam has no full point questions ( \\(n_\\text{full}=0\\) ):",
+                 "<b>Usually, an exam comprises no full point questions( \\(n_\\text{full}=0\\) ). In this case, steps 2 and 3 can be simplifed and the grades are given by</b>",
                  formula_grade_no_fullpoints,
                  "</p>")
 

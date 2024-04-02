@@ -16,7 +16,8 @@ round_half_up = function(x, digits) {
 
 #constants
 formula_guessing_correction = "$$c_g = \\frac{N - n_\\text{disabled} - n_\\text{full}}{n_\\text{choices}}$$"
-formula_grade = "$$ g_i = 10* \\bigg( \\frac{x_i - n_\\text{full} - c_g}{N - n_\\text{disabled} - n_\\text{bonus}  - n_\\text{full} - c_g} * \\frac{N-n_\\text{full}}{N} +  \\frac{n_\\text{full}}{N} \\bigg) $$"
+formula_corrected_p_score = "$$ p_i^\\text{cor} =  \\frac{x_i - n_\\text{full} - c_g}{N - n_\\text{disabled} - n_\\text{bonus}  - n_\\text{full} - c_g}$$"
+formula_grade = "$$ g_i = 10* \\Big( p_i^\\text{cor} * \\frac{N-n_\\text{full}}{N} +  \\frac{n_\\text{full}}{N} \\Big) $$"
 formula_grade_no_fullpoints = "$$ g_i = 10* \\frac{x_i  - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} $$"
 
 essb_grading_schema <- function(n_questions,
@@ -137,8 +138,3 @@ grading_formular <- function(schema) {
     return(paste0("$$ g_i = 10 * ", brk[1], "\\frac{",  nom_str, "}{", denom_str, "}",
                   add_full_str, brk[2], " = ", fx, "$$"))
 }
-
-
-x = essb_grading_schema(40, 4, n_full = 1)
-print(grading_table(x))
-
