@@ -57,10 +57,10 @@ shinyUI(fluidPage(
                   choices=c(1,2,3),
                   selected = 1),
 
-      selectInput(inputId = "trunc",
-                  label = "Type:",
-                  choices=c("rounding","truncating"),
-                  selected = "round"),
+      #selectInput(inputId = "trunc",
+      #            label = "Type:",
+      #            choices=c("rounding","truncating"),
+      #            selected = "round"),
     ),
 
     mainPanel(
