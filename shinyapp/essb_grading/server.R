@@ -6,8 +6,6 @@ library(ggplot2)
 library(dplyr)
 source("essb_grading_schema.R")
 
-
-
 print_table_long <- function(schema, decimals, truncating) {
     df <- arrange(grading_table(schema, omit_low_scores = TRUE,
                                 decimals=decimals,
@@ -16,19 +14,11 @@ print_table_long <- function(schema, decimals, truncating) {
 
 }
 
-grading_formular <- function(schema) {
-  rtn = "<p/>"
-
-  c_g = round(schema$c_g, 3)
-  d = (schema$max_score - schema$c_g) / 10
-  rtn = paste0(rtn, "The grades \\(g_i\\) for the test scores \\(x_i\\) are given by
-         $$\\begin{align}
-         g_i &= \\frac{x_i - ", c_g, "}{", schema$max_score , "-", c_g, "} * 10
-             = \\frac{x_i - ", c_g, "}{", round(d, 3), "}
-         \\end{align}$$
-         ")
-    paste0(rtn," </p>")
-    return(rtn)
+grading_formular_html <- function(schema) {
+  return(paste0("<p/>",
+                "The grades \\(g_i\\) for the test scores \\(x_i\\) (incl. bonus & full points) are given by",
+               grading_formular(schema),
+               " </p>"))
 }
 
 
@@ -56,12 +46,15 @@ explanation_html <- function() {
           n_\\text{full} &= \\text{number of full point questions}
            \\end{align}$$ </p>"
 
-    rtn = paste0(rtn, "<p>Guessing correction is defined as
-                 $$c_g = \\frac{N - n_\\text{disabled} - n_\\text{full}}{n_\\text{choices}}$$ </p>")
+    rtn = paste0(rtn, "<p>Guessing correction is defined as",
+                 formula_guessing_correction,
+                 "</p>")
 
-    rtn = paste0(rtn, "<p>The grades \\(g_i\\) for the test scores \\(x_i\\) are given by
-
-                   $$ g_i = \\frac{x_i - c_g}{N - n_\\text{disabled} - n_\\text{bonus} - c_g} * 10$$ </p>")
+    rtn = paste0(rtn, "<p>The grades \\(g_i\\) for the test scores \\(x_i\\)  (including bonus & full point questions) are given by ",
+                 formula_grade,
+                 "Thus, if the exam has no full point questions ( \\(n_\\text{full}=0\\) ):",
+                 formula_grade_no_fullpoints,
+                 "</p>")
 
     ## rtn = paste0(rtn, "<p>The result will be truncated to one decimal place (and not rounded).</p>")
 
@@ -91,7 +84,7 @@ shinyServer(function(input, output) {
                     truncating=input$trunc=="truncating")
     })
     output$formula <- renderUI({
-        withMathJax(HTML(grading_formular(schema())))
+        withMathJax(HTML(grading_formular_html(schema())))
     })
 
     output$explanation <- renderUI({
@@ -99,10 +92,13 @@ shinyServer(function(input, output) {
     })
 
     output$subtitle <- renderUI({
-      n = input$n_quest  - as.numeric(input$n_disabled)
-      rtn <- paste0("<H3>Grading procedure for ", n,
+      #n = input$n_quest  - as.numeric(input$n_disabled)
+      rtn <- paste0("<H3>Grading procedure for ", input$n_quest,
                       " questions with ",input$n_choices," choices</H3>")
       rtn <- paste0(rtn, "<H4>")
+      if (input$n_disabled > 0) {
+        rtn <- paste0(rtn, " and ", input$n_disabled, " <b>disabled</b> question(s)")
+      }
       if (input$n_bonus > 0) {
         rtn <- paste0(rtn, " and ", input$n_bonus, " <b>bonus</b> question(s)")
       }
